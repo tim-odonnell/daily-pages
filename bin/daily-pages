@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+"""daily-pages - combine the economy, VFINX and gold reports into one page and publish it on timodonnell.info.
+
+Builds daily.html (economy report, a labeled band, the VFINX report, a band, the gold report) from each report's
+latest.html, copies it into the GitHub Pages checkout, commits and pushes when it changed. Standard library only.
+
+  daily-pages [--out FILE] [--no-push] [--notify]
+"""
+import argparse
+import datetime
+import html
+import os
+import re
+import shutil
+import subprocess
+import sys
+
+HOME = os.path.expanduser('~')
+SITE = os.path.join(HOME, 'tim-odonnell.github.io')
+PAGE = 'daily.html'
+# (id, band title, report file, a report older than this many days is flagged as not updated)
+REPORTS = [('econ', 'US ECONOMY', os.path.join(HOME, 'Economy-Reports', 'latest.html'), 1),
+           ('vfinx', 'VFINX vs TREND', os.path.join(HOME, 'VFINX-Reports', 'latest.html'), 4),
+           ('gold', 'GOLD vs TREND', os.path.join(HOME, 'Gold-Reports', 'latest.html'), 4)]
+
+
+def scope_css(css, cls):
+    """Prefix every rule with .cls so the three reports' styles can't clash (works in every browser).
+    :root/html -> .cls (where the colour variables live), body -> .cls .rbody (the report's own column)."""
+    css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+    out, i = [], 0
+    while True:
+        j = css.find('{', i)
+        if j < 0:
+            break
+        head = css[i:j].strip()
+        if head.startswith('@'):                      # @media etc: scope what's inside
+            depth, k = 1, j + 1
+            while depth and k < len(css):
+                depth += {'{': 1, '}': -1}.get(css[k], 0)
+                k += 1
+            out.append(head + '{' + scope_css(css[j + 1:k - 1], cls) + '}')
+            i = k
+            continue
+        k = css.find('}', j)
+        sels = []
+        for s in head.split(','):
+            s = s.strip()
+            if re.match(r'(:root|html)\b', s):
+                s = '.' + cls + s[len(re.match(r'(:root|html)', s).group(0)):]
+            elif re.match(r'body\b', s):
+                s = f'.{cls} .rbody' + s[4:]
+            else:
+                s = f'.{cls} {s}'
+            sels.append(s)
+        out.append(','.join(sels) + css[j:k + 1])
+        i = k + 1
+    return '\n'.join(out)
+
+
+def section(rid, path):
+    page = open(path, encoding='utf-8').read()
+    css = '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', page, flags=re.S))
+    m = re.search(r'<body[^>]*>(.*)</body>', page, flags=re.S)
+    body = re.sub(r'<style[^>]*>.*?</style>', '', m.group(1) if m else page, flags=re.S)
+    body = body.replace(HOME, '~')                   # never publish this machine's home folder path
+    style = scope_css(css, 'r-' + rid) + f'\n.r-{rid}{{background:var(--bg);color:var(--fg)}}'
+    return style, f'<div class="r-{rid}" id="{rid}"><div class="rbody">{body}</div></div>'
+
+
+def build():
+    today = datetime.date.today()
+    styles, parts, toc, stale = [], [], [], []
+    for n, (rid, title, path, max_age) in enumerate(REPORTS):
+        if not os.path.exists(path):
+            stale.append(title)
+            band = f'<div class="band" id="{rid}"><span>{html.escape(title)}</span><small>no report yet</small></div>'
+            parts.append(band)
+            continue
+        made = datetime.date.fromtimestamp(os.path.getmtime(os.path.realpath(path)))
+        old = (today - made).days > max_age
+        if old:
+            stale.append(title)
+        note = f'made {made:%a %b %d}' + (' &mdash; <b>not updated today</b>' if old else '')
+        style, sec = section(rid, path)
+        styles.append(style)
+        if n:   # the economy report opens the page; the others get a band
+            parts.append(f'<div class="band"><span>{html.escape(title)}</span><small>{note}</small></div>')
+        elif old:
+            parts.append(f'<p class="stale">Economy report {note}.</p>')
+        parts.append(sec)
+        toc.append(f'<a href="#{rid}">{html.escape(title.title().replace("Vfinx", "VFINX").replace("Vs", "vs"))}</a>')
+    head = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily reports - {today:%b %d, %Y}</title>
+<meta name="description" content="Daily US economy report and VFINX / gold vs trend, updated automatically each morning.">
+<style>
+html,body{{margin:0;padding:0}} body{{background:#fbfaf7;color:#1f2328;font:16px/1.5 system-ui,sans-serif;overflow-x:hidden}}
+@media (prefers-color-scheme:dark){{body{{background:#16181c;color:#e6e6e6}}}}
+.top{{max-width:860px;margin:0 auto;padding:20px 16px 4px}} .top h1{{margin:0;font-size:1.3em}}
+.top p{{margin:4px 0;font-size:.85em;opacity:.75}} .top nav a{{margin-right:14px;color:inherit;font-weight:600}}
+.band{{background:#1d4ed8;color:#fff;padding:18px 16px;margin:28px 0 0;display:flex;flex-wrap:wrap;
+  justify-content:center;align-items:baseline;gap:6px 14px;letter-spacing:.08em}}
+.band span{{font-weight:800;font-size:1.25em}} .band small{{font-size:.85em;opacity:.9;letter-spacing:0}}
+.stale{{max-width:860px;margin:8px auto;padding:0 16px;color:#b45309;font-weight:600}}
+.rbody{{box-sizing:border-box}} .rbody img,.rbody table{{max-width:100%}}
+@media (max-width:520px){{.rbody .visual{{zoom:.74}}}}  /* the trend bars are 480px wide: fit them on phones */
+</style>
+<style>{chr(10).join(styles)}</style></head><body>
+<header class="top"><h1>Daily reports &mdash; {today:%A %B %d, %Y}</h1>
+<nav>{" ".join(toc)}</nav>
+<p>Made automatically every morning by scripts on a home computer (the economy notes use a small local AI model and are
+fact-checked by script). Not financial advice.</p></header>
+'''
+    return head + '\n'.join(parts) + '\n</body></html>\n', stale
+
+
+def notify(title, body, urgent=False):
+    if shutil.which('notify-send'):
+        subprocess.run(['notify-send', '-a', 'Daily page', '-i', 'web-browser'] + (['-u', 'critical'] if urgent else [])
+                       + [title, body])
+
+
+def git(*args):
+    return subprocess.run(['git', '-C', SITE] + list(args), capture_output=True, text=True)
+
+
+def publish(page, stale):
+    r = git('pull', '--rebase', '-q')
+    if r.returncode:
+        raise RuntimeError('git pull failed: ' + r.stderr.strip()[-300:])
+    with open(os.path.join(SITE, PAGE), 'w', encoding='utf-8') as f:
+        f.write(page)
+    git('add', PAGE)
+    if git('diff', '--cached', '--quiet').returncode == 0:
+        return 'unchanged - nothing to push'
+    msg = f'Daily reports {datetime.date.today()}' + (f' (not updated: {", ".join(stale)})' if stale else '')
+    for args in (('commit', '-q', '-m', msg), ('push', '-q')):
+        r = git(*args)
+        if r.returncode:
+            raise RuntimeError(f'git {args[0]} failed: ' + r.stderr.strip()[-300:])
+    return 'pushed: ' + msg
+
+
+def main():
+    ap = argparse.ArgumentParser(description='Publish the combined daily reports page')
+    ap.add_argument('--out', help='also write the page to this file')
+    ap.add_argument('--no-push', action='store_true', help='build only, do not touch the website')
+    ap.add_argument('--notify', action='store_true', help='desktop pop-up when it fails')
+    a = ap.parse_args()
+    page, stale = build()
+    if a.out:
+        with open(a.out, 'w', encoding='utf-8') as f:
+            f.write(page)
+        print('written', a.out)
+    if a.no_push:
+        return
+    try:
+        print(publish(page, stale))
+    except Exception as e:
+        print(f'daily-pages: {e}', file=sys.stderr)
+        if a.notify:
+            notify('Daily page NOT published', str(e), urgent=True)
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()

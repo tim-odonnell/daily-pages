@@ -1,0 +1,10 @@
+[Unit]
+Description=Publish timodonnell.info/daily every morning at 06:50 (after economy 04:30, gold 06:30, VFINX 06:35)
+
+[Timer]
+OnCalendar=*-*-* 06:50:00
+# a run missed while the laptop was off is made at the next boot (each report shows its own date)
+Persistent=true
+
+[Install]
+WantedBy=timers.target
