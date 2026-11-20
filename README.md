@@ -9,3 +9,7 @@ clashes, works in every browser); phones get the same page scaled to fit. A repo
 - `daily-pages --no-push --out FILE` - build a local preview only
 - Timer `daily-pages.timer`: every day 03:00 (economy 02:05, gold 02:10, VFINX 02:12), again at 06:50 to catch a late economy report, Persistent. Failure -> desktop pop-up.
 - Install: `./install.sh`
+
+`guide.html` is a fixed "How to read this page" section added below the three reports (link "How to read it" at the top).
+It is the same text as the private claude.ai artifact "Reading the Good-Guy Daily"; edit this file to change it. Its styles are
+scoped like the reports'; it uses font fallbacks only (no web fonts are loaded on the site).

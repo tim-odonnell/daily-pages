@@ -22,6 +22,8 @@ PAGE = 'daily.html'
 REPORTS = [('econ', 'US ECONOMY', os.path.join(HOME, 'Economy-Reports', 'latest.html'), 1),
            ('vfinx', 'VFINX vs TREND', os.path.join(HOME, 'VFINX-Reports', 'latest.html'), 4),
            ('gold', 'GOLD vs TREND', os.path.join(HOME, 'Gold-Reports', 'latest.html'), 4)]
+# Fixed guide at the bottom of the page (same text as the private artifact "Reading the Good-Guy Daily")
+GUIDE = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'guide.html')
 
 
 def scope_css(css, cls):
@@ -63,6 +65,7 @@ def section(rid, path):
     css = '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', page, flags=re.S))
     m = re.search(r'<body[^>]*>(.*)</body>', page, flags=re.S)
     body = re.sub(r'<style[^>]*>.*?</style>', '', m.group(1) if m else page, flags=re.S)
+    body = re.sub(r'<(title)[^>]*>.*?</title>|<(meta|link)\b[^>]*>', '', body, flags=re.S)  # head-only tags of a body-less page
     body = body.replace(HOME, '~')                   # never publish this machine's home folder path
     style = scope_css(css, 'r-' + rid) + f'\n.r-{rid}{{background:var(--bg);color:var(--fg)}}'
     return style, f'<div class="r-{rid}" id="{rid}"><div class="rbody">{body}</div></div>'
@@ -89,7 +92,13 @@ def build():
         elif old:
             parts.append(f'<p class="stale">Economy report {note}.</p>')
         parts.append(sec)
-        toc.append(f'<a href="#{rid}">{html.escape(title.title().replace("Vfinx", "VFINX").replace("Vs", "vs"))}</a>')
+        toc.append(f'<a href="#{rid}">{html.escape(title.title().replace("Vfinx", "VFINX").replace("Vs", "vs").replace("Us ", "US "))}</a>')
+    if os.path.exists(GUIDE):
+        style, sec = section('guide', GUIDE)
+        styles.append(style)
+        parts.append('<div class="band"><span>HOW TO READ THIS PAGE</span><small>what each part means and how it is made</small></div>')
+        parts.append(sec)
+        toc.append('<a href="#guide">How to read it</a>')
     head = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daily reports - {today:%b %d, %Y}</title>
