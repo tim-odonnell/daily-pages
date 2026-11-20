@@ -7,5 +7,5 @@ clashes, works in every browser); phones get the same page scaled to fit. A repo
 
 - `daily-pages` - build + commit + push to `~/tim-odonnell.github.io` (only when the page changed)
 - `daily-pages --no-push --out FILE` - build a local preview only
-- Timer `daily-pages.timer`: every day 06:50 (economy 04:30, gold 06:30, VFINX 06:35), Persistent. Failure -> desktop pop-up.
+- Timer `daily-pages.timer`: every day 03:00 (economy 02:05, gold 02:10, VFINX 02:12), again at 06:50 to catch a late economy report, Persistent. Failure -> desktop pop-up.
 - Install: `./install.sh`
