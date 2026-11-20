@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""daily-pages - combine the economy, VFINX and gold reports into one page and publish it on timodonnell.info.
+"""daily-pages - combine the economy, VFINX, VBMFX and gold reports into one page and publish it on timodonnell.info.
 
 Builds daily.html (economy report, a labeled band, the VFINX report, a band, the gold report) from each report's
 latest.html, copies it into the GitHub Pages checkout, commits and pushes when it changed. Standard library only.
@@ -21,6 +21,7 @@ PAGE = 'daily.html'
 # (id, band title, report file, a report older than this many days is flagged as not updated)
 REPORTS = [('econ', 'US ECONOMY', os.path.join(HOME, 'Economy-Reports', 'latest.html'), 1),
            ('vfinx', 'VFINX vs TREND', os.path.join(HOME, 'VFINX-Reports', 'latest.html'), 4),
+           ('vbmfx', 'VBMFX vs TREND', os.path.join(HOME, 'VBMFX-Reports', 'latest.html'), 4),
            ('gold', 'GOLD vs TREND', os.path.join(HOME, 'Gold-Reports', 'latest.html'), 4)]
 # Fixed guide at the bottom of the page (same text as the private artifact "Reading the Good-Guy Daily")
 GUIDE = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'guide.html')
@@ -92,7 +93,7 @@ def build():
         elif old:
             parts.append(f'<p class="stale">Economy report {note}.</p>')
         parts.append(sec)
-        toc.append(f'<a href="#{rid}">{html.escape(title.title().replace("Vfinx", "VFINX").replace("Vs", "vs").replace("Us ", "US "))}</a>')
+        toc.append(f'<a href="#{rid}">{html.escape(title.title().replace("Vfinx", "VFINX").replace("Vbmfx", "VBMFX").replace("Vs", "vs").replace("Us ", "US "))}</a>')
     if os.path.exists(GUIDE):
         style, sec = section('guide', GUIDE)
         styles.append(style)
@@ -102,7 +103,7 @@ def build():
     head = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The-Good-Guy-Daily - {today:%b %d, %Y}</title>
-<meta name="description" content="Daily US economy report and VFINX / gold vs trend, updated automatically each morning.">
+<meta name="description" content="Daily US economy report and VFINX (stocks), VBMFX (bonds) and gold vs trend, updated automatically each night.">
 <style>
 html,body{{margin:0;padding:0}} body{{background:#fbfaf7;color:#1f2328;font:16px/1.5 system-ui,sans-serif;overflow-x:hidden}}
 @media (prefers-color-scheme:dark){{body{{background:#16181c;color:#e6e6e6}}}}
@@ -122,7 +123,7 @@ html,body{{margin:0;padding:0}} body{{background:#fbfaf7;color:#1f2328;font:16px
 </style>
 <style>{chr(10).join(styles)}</style></head><body>
 <div class="mast"><h1>The-Good-Guy-Daily</h1>
-<div class="dateline"><span>{today:%A, %B %d, %Y}</span><span>Economy &middot; VFINX &middot; Gold</span></div></div>
+<div class="dateline"><span>{today:%A, %B %d, %Y}</span><span>Economy &middot; VFINX &middot; VBMFX &middot; Gold</span></div></div>
 <header class="top">
 <nav>{" ".join(toc)}</nav>
 <p>Made automatically every morning by scripts on a home computer (the economy notes use a small local AI model and are

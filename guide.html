@@ -1,4 +1,4 @@
-<title>Reading the Good-Guy Daily</title>
+<title>Reading The-Good-Guy-Daily</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -115,8 +115,8 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule) 
 <div class="mast">
   <div class="wrap">
     <p class="eyebrow">timodonnell.info/daily &middot; guide</p>
-    <h1>Reading the Good-Guy Daily</h1>
-    <p class="lede">One web page, rebuilt every night on a small computer at home: a report on the US economy, then VFINX (an S&amp;P&nbsp;500 index fund) and gold measured against their own price trends. This guide explains how it is made and what every part is telling you.</p>
+    <h1>Reading The-Good-Guy-Daily</h1>
+    <p class="lede">One web page, rebuilt every night on a small computer at home: a report on the US economy, then three markets measured against their own price trends: VFINX for stocks (an S&amp;P&nbsp;500 index fund), VBMFX for bonds (a total US bond market index fund) and gold. This guide explains how it is made and what every part is telling you.</p>
     <div class="legend">
       <span><span class="chip plain">Plain words</span> the idea, no finance background needed</span>
       <span><span class="chip pro">Precisely</span> exact definitions, data and method</span>
@@ -128,8 +128,8 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule) 
 
 <section>
   <div class="intro-grid">
-    <div class="fact"><span class="eyebrow">What it is</span><b>Three reports, one page</b>
-      <p>US economy first, then VFINX vs trend, then gold vs trend, each under its own blue band. The links at the top jump to each one.</p></div>
+    <div class="fact"><span class="eyebrow">What it is</span><b>Four reports, one page</b>
+      <p>US economy first, then stocks (VFINX), bonds (VBMFX) and gold, each measured against its trend under its own blue band. The links at the top jump to each one.</p></div>
     <div class="fact"><span class="eyebrow">Who writes it</span><b>Mostly scripts, a little AI</b>
       <p>Every number is fetched and calculated by ordinary programs. A small AI model running on the home computer writes only the short news notes, and those are fact-checked.</p></div>
     <div class="fact"><span class="eyebrow">When</span><b>Published around 3 a.m. Eastern</b>
@@ -153,7 +153,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule) 
       <p class="small">Each news-note sentence is put back next to its source text and checked one at a time. Wrong sentences are replaced by the source's own sentence; unsupported ones are removed.</p></li>
     <li><time>02:05</time><b>Economy report built</b><span class="who">script</span>
       <p class="small">A second, purely numeric check drops any sentence whose figure does not match the night's data.</p></li>
-    <li><time>02:10</time><b>Gold and VFINX reports</b><span class="who">script</span>
+    <li><time>02:10</time><b>Gold, VFINX and VBMFX reports</b><span class="who">script</span>
       <p class="small">Full daily price histories are downloaded from Yahoo Finance, the trend lines are fitted and the charts drawn. About one second each. Weekdays only.</p></li>
     <li class="pub"><time>03:00</time><b>Published</b><span class="who">script</span>
       <p class="small">The three reports are joined into one page and pushed to the website. A backup build at 06:40 and a second publish at 06:50 catch a late or failed run.</p></li>
@@ -294,8 +294,8 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule) 
 
 <div class="group-head">
   <p class="eyebrow">Part two</p>
-  <h2>VFINX vs trend and Gold vs trend</h2>
-  <p class="lede">Two reports built the same way, with no AI at all. They ask one question: is the price today above or below where its past trends say it "should" be, over many different time spans at once?</p>
+  <h2>VFINX, VBMFX and Gold vs trend</h2>
+  <p class="lede">Three reports built the same way, with no AI at all. They ask one question: is the price today above or below where its past trends say it "should" be, over many different time spans at once?</p>
 </div>
 
 <section class="figure" aria-label="Schematic of the trend chart">
@@ -334,7 +334,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule) 
     <div class="lane"><p class="eyebrow">Precisely</p>
       <ul>
         <li>Ordinary least squares of ln(price) on calendar days within each window: ln&nbsp;P = a + b&middot;t. The fitted curve is exponential, a straight line on a log scale.</li>
-        <li>Windows in calendar days: 30, 91, 182, 365, 1826, 3652, 7305 (gold, VFINX), plus 10957 and 14610 (VFINX only). A window with less than its full history (more than 7 days short) is flagged "short history".</li>
+        <li>Windows in calendar days: 30, 91, 182, 365, 1826, 3652, 7305 (all three), plus 10957 (VFINX, VBMFX) and 14610 (VFINX only). A window with less than its full history (more than 7 days short) is flagged "short history".</li>
         <li>Growth %/yr = e<sup>365.25&middot;b</sup> &minus; 1. R&sup2; is the fit of the log regression: near 1 the prices hugged the line, near 0 the window had no clear trend.</li>
         <li>Each window is refitted from scratch every night. Fits are exact closed-form OLS, checked against an independent implementation to the cent.</li>
       </ul></div>
@@ -343,15 +343,17 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule) 
 
 <article class="part">
   <header><h3>The data behind each report</h3>
-    <p class="example">VFINX: 11,818 trading days since Jan 2, 1980. Gold: 6,582 trading days since Aug 30, 2000.</p></header>
+    <p class="example">VFINX: 11,818 trading days since Jan 2, 1980. VBMFX: 10,062 since Dec 11, 1986. Gold: 6,582 since Aug 30, 2000.</p></header>
   <div class="lanes">
     <div class="lane"><p class="eyebrow">Plain words</p>
       <p><b>VFINX</b> is Vanguard's 500 Index Fund, which tracks the S&amp;P&nbsp;500. Its prices include reinvested dividends, so they show what an investor actually earned.</p>
+      <p><b>VBMFX</b> is Vanguard's Total Bond Market Index Fund, the first bond index fund for ordinary investors (1986). It holds thousands of US government, mortgage and high-quality corporate bonds. Most of its return is the interest it pays each month, so its prices also include that interest reinvested. When interest rates rise, bond prices fall, which is why bonds dropped sharply in 2022.</p>
       <p><b>Gold</b> is the price of gold futures on the COMEX exchange, in US dollars per ounce.</p>
       <p>Both use the previous trading day's closing price.</p></div>
     <div class="lane"><p class="eyebrow">Precisely</p>
       <ul>
         <li>VFINX: Yahoo Finance daily history, adjusted close (dividends and distributions reinvested), rescaled so the latest adjusted close equals the latest NAV. Older points therefore sit below the NAV quoted at the time. Today's bar is ignored until 18:00 New York time, when the NAV is out.</li>
+        <li>VBMFX: the same method (Yahoo adjusted close, monthly income dividends reinvested, rescaled to the latest NAV), from the fund's first day, Dec 11, 1986, at a $10.00 NAV. The raw NAV has stayed near $10, so nearly all of the trend is reinvested income; the index it tracks today is the Bloomberg US Aggregate Float Adjusted.</li>
         <li>Gold: Yahoo Finance <code>GC=F</code>, the continuous front-month COMEX contract, daily close; today's bar is ignored until 17:00 New York time. Roll effects between contracts are not adjusted.</li>
         <li>"Next trading day" is the next weekday; exchange holidays are not modelled.</li>
       </ul></div>
@@ -389,7 +391,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule) 
         <li>Log price scale, so equal vertical distances are equal percentage changes and every exponential trend is a straight line. The y-range is the visible prices and line ends, padded 3%.</li>
         <li>Price series thinned to at most 500 evenly spaced points for display, so a single-day extreme may not appear; the numbers in the tables use every day.</li>
         <li>Line opacity = max(0.15, R&sup2;). Labels keep the order of the line ends and are pushed at least 10 px apart, so a label's height is approximate when lines converge.</li>
-        <li>Amber = the same OLS over the full sample (VFINX since Jan 1980, gold since Aug 2000), refitted nightly: today 10.2%/yr for VFINX (R&sup2; 0.96) and 9.1%/yr for gold (R&sup2; 0.86). A new day moves it by about 0.005%, so it drifts visibly only over months.</li>
+        <li>Amber = the same OLS over the full sample (VFINX since Jan 1980, VBMFX since Dec 1986, gold since Aug 2000), refitted nightly: as of Nov 19, 2026, 10.2%/yr for VFINX (R&sup2; 0.96), 5.1%/yr for VBMFX (R&sup2; 0.94) and 9.1%/yr for gold (R&sup2; 0.86). A new day moves it by about 0.005%, so it drifts visibly only over months.</li>
       </ul></div>
   </div>
 </article>
