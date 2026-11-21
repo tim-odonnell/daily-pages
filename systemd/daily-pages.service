@@ -1,5 +1,5 @@
 [Unit]
-Description=Publish the combined daily reports page (economy, VFINX, gold) to timodonnell.info/daily
+Description=Publish the combined daily reports page (economy, VFINX, VBMFX, gold) to timodonnell.info/daily
 Wants=network-online.target
 After=network-online.target gold-report.service vfinx-report.service
 
