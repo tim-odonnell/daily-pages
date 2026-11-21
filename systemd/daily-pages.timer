@@ -1,10 +1,10 @@
 [Unit]
-Description=Publish timodonnell.info/daily at 03:00 (after economy 02:05, gold 02:10, VFINX 02:12); 06:50 re-run catches a late economy report
+Description=Publish timodonnell.info/daily every day at 03:00 (after economy 02:05; gold/VFINX/VBMFX 02:10-02:14 Tue-Sat); 06:50 re-run catches a late economy report
 
 [Timer]
-OnCalendar=Tue..Sat *-*-* 03:00:00
+OnCalendar=*-*-* 03:00:00
 # second run: picks up the 06:40 backup economy report if the 02:05 build failed (pushes only when the page changed)
-OnCalendar=Tue..Sat *-*-* 06:50:00
+OnCalendar=*-*-* 06:50:00
 # a run missed while the laptop was off is made at the next boot (each report shows its own date)
 Persistent=true
 
