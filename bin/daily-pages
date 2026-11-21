@@ -13,6 +13,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 import sys
 
 HOME = os.path.expanduser('~')
@@ -143,7 +144,11 @@ def git(*args):
 
 
 def publish(page, stale):
-    r = git('pull', '--rebase', '-q')
+    for wait in (0, 10, 20, 30, 60, 60):   # after a wake the network can take a minute or two
+        time.sleep(wait)
+        r = git('pull', '--rebase', '-q')
+        if r.returncode == 0 or 'resolve host' not in r.stderr and 'unable to access' not in r.stderr:
+            break
     if r.returncode:
         raise RuntimeError('git pull failed: ' + r.stderr.strip()[-300:])
     with open(os.path.join(SITE, PAGE), 'w', encoding='utf-8') as f:
