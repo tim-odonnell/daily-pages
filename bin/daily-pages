@@ -155,6 +155,12 @@ def publish(page, stale):
         f.write(page)
     git('add', PAGE)
     if git('diff', '--cached', '--quiet').returncode == 0:
+        # an earlier run may have committed but failed to push (e.g. no GitHub login at night): push that now
+        if git('rev-list', '--count', '@{u}..HEAD').stdout.strip() not in ('', '0'):
+            r = git('push', '-q')
+            if r.returncode:
+                raise RuntimeError('git push failed: ' + r.stderr.strip()[-300:])
+            return 'pushed an earlier unpushed commit'
         return 'unchanged - nothing to push'
     msg = f'Daily reports {datetime.date.today()}' + (f' (not updated: {", ".join(stale)})' if stale else '')
     for args in (('commit', '-q', '-m', msg), ('push', '-q')):
