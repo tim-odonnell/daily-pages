@@ -21,3 +21,12 @@ median household income of the ZIP code you live in; above that line you
 contribute a small share of what the software helped you earn, never enough to
 pull you back below the line. Trust-based: no reporting, no audits. See
 [LICENSE](LICENSE) and [the license project](https://github.com/tim-odonnell/median-line-license).
+
+## GitHub login for the nightly push
+
+The site checkout pushes over SSH with a **deploy key** that can only write to the website repo:
+`~/.ssh/daily-pages-deploy` (no passphrase), set per repo with
+`git config core.sshCommand "ssh -i ~/.ssh/daily-pages-deploy -o IdentitiesOnly=yes -o IdentityAgent=none -o BatchMode=yes"`
+and remote `git@github.com:tim-odonnell/tim-odonnell.github.io.git`. Reason: with automatic login the GNOME keyring
+(which holds the `gh` login) stays locked after a restart, so an HTTPS push at 03:00 popped up an unlock prompt and failed.
+Revoke the key in the website repo's Settings → Deploy keys.
