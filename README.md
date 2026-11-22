@@ -27,6 +27,6 @@ pull you back below the line. Trust-based: no reporting, no audits. See
 The site checkout pushes over SSH with a **deploy key** that can only write to the website repo:
 `~/.ssh/daily-pages-deploy` (no passphrase), set per repo with
 `git config core.sshCommand "ssh -i ~/.ssh/daily-pages-deploy -o IdentitiesOnly=yes -o IdentityAgent=none -o BatchMode=yes"`
-and remote `git@github.com:tim-odonnell/tim-odonnell.github.io.git`. Reason: with automatic login the GNOME keyring
+and remote `ssh://git@ssh.github.com:443/tim-odonnell/tim-odonnell.github.io.git` (SSH over port 443, which travel/office networks rarely block). Reason: with automatic login the GNOME keyring
 (which holds the `gh` login) stays locked after a restart, so an HTTPS push at 03:00 popped up an unlock prompt and failed.
 Revoke the key in the website repo's Settings → Deploy keys.
