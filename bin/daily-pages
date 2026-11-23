@@ -9,6 +9,7 @@ latest.html, copies it into the GitHub Pages checkout, commits and pushes when i
 import argparse
 import datetime
 import html
+import json
 import os
 import re
 import shutil
@@ -62,8 +63,29 @@ def scope_css(css, cls):
     return '\n'.join(out)
 
 
-def section(rid, path):
+def costco_box():
+    """Run costco-gold (gold-trend repo): today's Costco 1 oz bar after 2% cash back vs gold's all-history trend.
+    -> (html fragment for the gold section, buy day?). A failure only leaves the box out."""
+    if not shutil.which('costco-gold'):
+        return '', False
+    try:
+        r = subprocess.run(['costco-gold'], capture_output=True, text=True, timeout=180)
+        print((r.stdout + r.stderr).strip())
+        if r.returncode:
+            return '', False
+        box = open(os.path.join(HOME, 'Gold-Reports', 'costco-box.html'), encoding='utf-8').read()
+        with open(os.path.join(HOME, 'Gold-Reports', 'costco-latest.json'), encoding='utf-8') as f:
+            return box, bool(json.load(f).get('buy'))
+    except Exception as e:
+        print(f'daily-pages: costco-gold failed: {e}', file=sys.stderr)
+        return '', False
+
+
+def section(rid, path, insert=''):
     page = open(path, encoding='utf-8').read()
+    if insert:   # right after the report's summary line (before CSS is collected, so its <style> gets scoped too)
+        m = re.search(r'<p class="summary">.*?</p>', page, flags=re.S)
+        page = page[:m.end()] + '\n' + insert + page[m.end():] if m else page.replace('<body>', '<body>' + insert, 1)
     css = '\n'.join(re.findall(r'<style[^>]*>(.*?)</style>', page, flags=re.S))
     m = re.search(r'<body[^>]*>(.*)</body>', page, flags=re.S)
     body = re.sub(r'<style[^>]*>.*?</style>', '', m.group(1) if m else page, flags=re.S)
@@ -76,6 +98,7 @@ def section(rid, path):
 def build():
     today = datetime.date.today()
     styles, parts, toc, stale = [], [], [], []
+    costco, buy_day = costco_box()
     for n, (rid, title, path, max_age) in enumerate(REPORTS):
         if not os.path.exists(path):
             stale.append(title)
@@ -87,7 +110,9 @@ def build():
         if old:
             stale.append(title)
         note = f'made {made:%a %b %d}' + (' &mdash; <b>not updated today</b>' if old else '')
-        style, sec = section(rid, path)
+        if rid == 'gold' and buy_day:
+            note += ' &middot; <b>COSTCO BAR: BUY DAY</b>'
+        style, sec = section(rid, path, costco if rid == 'gold' else '')
         styles.append(style)
         if n:   # the economy report opens the page; the others get a band
             parts.append(f'<div class="band"><span>{html.escape(title)}</span><small>{note}</small></div>')

@@ -7,6 +7,8 @@ clashes, works in every browser); phones get the same page scaled to fit. A repo
 
 - `daily-pages` - build + commit + push to `~/tim-odonnell.github.io` (only when the page changed)
 - `daily-pages --no-push --out FILE` - build a local preview only
+- Gold section: `costco-gold` (gold-trend repo) runs first and its box (Costco 1 oz bar after 2% cash back vs the
+  all-history trend, green BUY DAY banner + band note when at/below) goes under the gold summary. A failure only drops the box.
 - Timer `daily-pages.timer`: every day 03:00 (economy 02:05, gold 02:10, VFINX 02:12), again at 06:50 to catch a late economy report, Persistent. Failure -> desktop pop-up.
 - Install: `./install.sh`
 
